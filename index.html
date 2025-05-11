@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý cửa hàng</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Sidebar Component
+    const Sidebar = ({ setCurrentPage }) => {
+      const [active, setActive] = useState('Dashboard');
+      const menuItems = [
+        'Dashboard', 'Quản lý nhân viên', 'Quản lý chi nhánh', 'Quản lý ca làm việc',
+        'Quản lý nhập kho', 'Quản lý nhà cung cấp', 'Quản lý mặt hàng', 'Quản lý sản phẩm',
+        'Quản lý khách hàng', 'Quản lý đơn hàng'
+      ];
+
+      const handleMenuClick = (item) => {
+        setActive(item);
+        setCurrentPage(item);
+      };
+
+      return (
+        <div className="fixed h-screen w-64 bg-gray-100 border-r border-gray-200">
+          <div className="p-4 text-xl font-bold text-gray-800">Quản lý cửa hàng</div>
+          <nav className="mt-4">
+            {menuItems.map(item => (
+              <div
+                key={item}
+                onClick={() => handleMenuClick(item)}
+                className={`p-4 cursor-pointer text-gray-600 hover:bg-blue-100 ${active === item ? 'bg-blue-100 text-blue-600' : ''}`}
+              >
+                {item}
+              </div>
+            ))}
+          </nav>
+          <div className="absolute bottom-4 p-4">
+            <button className="w-full text-left text-gray-600 hover:text-red-500">Đăng xuất</button>
+          </div>
+        </div>
+      );
+    };
+
+    // Header Component
+    const Header = ({ title }) => (
+      <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+        <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
+        <div className="flex items-center space-x-4">
+          <input
+            type="text"
+            placeholder="Tìm kiếm..."
+            className="border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="flex items-center space-x-2">
+            <img src="https://via.placeholder.com/32" alt="Avatar" className="w-8 h-8 rounded-full" />
+            <span className="text-gray-600">Admin</span>
+          </div>
+        </div>
+      </div>
+    );
+
+    // Modal Component
+    const Modal = ({ isOpen, onClose, title, children }) => {
+      if (!isOpen) return null;
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg w-1/3">
+            <h2 className="text-lg font-semibold mb-4">{title}</h2>
+            {children}
+            <div className="mt-4 flex justify-end space-x-2">
+              <button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Hủy</button>
+              <button onClick={onClose} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Lưu</button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Dashboard Component
+    const Dashboard = () => {
+      useEffect(() => {
+        const revenueChart = new Chart(document.getElementById('revenueChart'), {
+          type: 'line',
+          data: {
+            labels: ['1/4', '2/4', '3/4', '4/4', '5/4'],
+            datasets: [{
+              label: 'Doanh thu',
+              data: [1200, 1900, 3000, 5000, 2300],
+              borderColor: '#3B82F6',
+              fill: false,
+            }],
+          },
+          options: { scales: { y: { beginAtZero: true } } },
+        });
+
+        const stockChart = new Chart(document.getElementById('stockChart'), {
+          type: 'bar',
+          data: {
+            labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4'],
+            datasets: [{
+              label: 'Nhập kho',
+              data: [50, 75, 30, 90],
+              backgroundColor: '#3B82F6',
+            }],
+          },
+          options: { scales: { y: { beginAtZero: true } } },
+        });
+
+        return () => {
+          revenueChart.destroy();
+          stockChart.destroy();
+        };
+      }, []);
+
+      return (
+        <div className="p-6">
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="bg-white p-4 border border-gray-200 rounded shadow-sm">
+              <h3 className="text-gray-600">Nhân viên</h3>
+              <p className="text-2xl font-bold text-blue-600">25</p>
+            </div>
+            <div className="bg-white p-4 border border-gray-200 rounded shadow-sm">
+              <h3 className="text-gray-600">Chi nhánh</h3>
+              <p className="text-2xl font-bold text-blue-600">3</p>
+            </div>
+            <div className="bg-white p-4 border border-gray-200 rounded shadow-sm">
+              <h3 className="text-gray-600">Đơn hàng hôm nay</h3>
+              <p className="text-2xl font-bold text-blue-600">12</p>
+            </div>
+            <div className="bg-white p-4 border border-gray-200 rounded shadow-sm">
+              <h3 className="text-gray-600">Tồn kho</h3>
+              <p className="text-2xl font-bold text-blue-600">150</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-white p-4 border border-gray-200 rounded shadow-sm">
+              <h3 className="text-gray-600 mb-2">Doanh thu</h3>
+              <canvas id="revenueChart"></canvas>
+            </div>
+            <div className="bg-white p-4 border border-gray-200 rounded shadow-sm">
+              <h3 className="text-gray-600 mb-2">Nhập kho</h3>
+              <canvas id="stockChart"></canvas>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white p-4 border border-gray-200 rounded shadow-sm">
+              <h3 className="text-gray-600 mb-2">Đơn hàng gần đây</h3>
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="p-2">ID</th>
+                    <th className="p-2">Khách hàng</th>
+                    <th className="p-2">Tổng tiền</th>
+                    <th className="p-2">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t">
+                    <td className="p-2">001</td>
+                    <td className="p-2">Nguyễn Văn A</td>
+                    <td className="p-2">1,200,000</td>
+                    <td className="p-2 text-green-600">Hoàn thành</td>
+                  </tr>
+                  <tr className="border-t bg-gray-50">
+                    <td className="p-2">002</td>
+                    <td className="p-2">Trần Thị B</td>
+                    <td className="p-2">800,000</td>
+                    <td className="p-2 text-yellow-600">Đang xử lý</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-white p-4 border border-gray-200 rounded shadow-sm">
+              <h3 className="text-gray-600 mb-2">Ca làm việc gần đây</h3>
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="p-2">ID</th>
+                    <th className="p-2">Bắt đầu</th>
+                    <th className="p-2">Kết thúc</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t">
+                    <td className="p-2">S001</td>
+                    <td className="p-2">08:00 20/04/2025</td>
+                    <td className="p-2">16:00 20/04/2025</td>
+                  </tr>
+                  <tr className="border-t bg-gray-50">
+                    <td className="p-2">S002</td>
+                    <td className="p-2">16:00 20/04/2025</td>
+                    <td className="p-2">22:00 20/04/2025</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Employee Management Component
+    const EmployeeManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách nhân viên</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm nhân viên
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">ID</th>
+                <th className="p-2">Tên</th>
+                <th className="p-2">Vị trí</th>
+                <th className="p-2">Lương</th>
+                <th className="p-2">Chi nhánh</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">E001</td>
+                <td className="p-2">Nguyễn Văn A</td>
+                <td className="p-2">Nhân viên bán hàng</td>
+                <td className="p-2">8,000,000</td>
+                <td className="p-2">Chi nhánh 1</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">E002</td>
+                <td className="p-2">Trần Thị B</td>
+                <td className="p-2">Quản lý</td>
+                <td className="p-2">12,000,000</td>
+                <td className="p-2">Chi nhánh 2</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm nhân viên"
+          >
+            <div className="space-y-4">
+              <input type="text" placeholder="Tên" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="text" placeholder="Vị trí" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="number" placeholder="Lương" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Chi nhánh 1</option>
+                <option>Chi nhánh 2</option>
+              </select>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Branch Management Component
+    const BranchManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách chi nhánh</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm chi nhánh
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">ID</th>
+                <th className="p-2">Tên</th>
+                <th className="p-2">Địa điểm</th>
+                <th className="p-2">Liên hệ</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">B001</td>
+                <td className="p-2">Chi nhánh 1</td>
+                <td className="p-2">Hà Nội</td>
+                <td className="p-2">0123456789</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">B002</td>
+                <td className="p-2">Chi nhánh 2</td>
+                <td className="p-2">TP.HCM</td>
+                <td className="p-2">0987654321</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm chi nhánh"
+          >
+            <div className="space-y-4">
+              <input type="text" placeholder="Tên" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="text" placeholder="Địa điểm" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="text" placeholder="Liên hệ" className="w-full border border-gray-300 rounded px-3 py-2" />
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Shift Management Component
+    const ShiftManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách ca làm việc</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm ca làm việc
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">ID</th>
+                <th className="p-2">Bắt đầu</th>
+                <th className="p-2">Kết thúc</th>
+                <th className="p-2">Nhân viên</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">S001</td>
+                <td className="p-2">08:00 20/04/2025</td>
+                <td className="p-2">16:00 20/04/2025</td>
+                <td className="p-2">Nguyễn Văn A</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">S002</td>
+                <td className="p-2">16:00 20/04/2025</td>
+                <td className="p-2">22:00 20/04/2025</td>
+                <td className="p-2">Trần Thị B</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm ca làm việc"
+          >
+            <div className="space-y-4">
+              <input type="datetime-local" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="datetime-local" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Nguyễn Văn A</option>
+                <option>Trần Thị B</option>
+              </select>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Stock Entry Management Component
+    const StockEntryManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách nhập kho</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm nhập kho
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">ID</th>
+                <th className="p-2">Ngày nhập</th>
+                <th className="p-2">Nhà cung cấp</th>
+                <th className="p-2">Mặt hàng</th>
+                <th className="p-2">Số lượng</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">SE001</td>
+                <td className="p-2">20/04/2025</td>
+                <td className="p-2">Nhà cung cấp A</td>
+                <td className="p-2">Gạo</td>
+                <td className="p-2">50</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">SE002</td>
+                <td className="p-2">19/04/2025</td>
+                <td className="p-2">Nhà cung cấp B</td>
+                <td className="p-2">Dầu ăn</td>
+                <td className="p-2">30</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm nhập kho"
+          >
+            <div className="space-y-4">
+              <input type="date" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Nhà cung cấp A</option>
+                <option>Nhà cung cấp B</option>
+              </select>
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Gạo</option>
+                <option>Dầu ăn</option>
+              </select>
+              <input type="number" placeholder="Số lượng" className="w-full border border-gray-300 rounded px-3 py-2" />
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Supplier Management Component
+    const SupplierManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách nhà cung cấp</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm nhà cung cấp
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">Tên</th>
+                <th className="p-2">Liên hệ</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">Nhà cung cấp A</td>
+                <td className="p-2">0123456789</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">Nhà cung cấp B</td>
+                <td className="p-2">0987654321</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm nhà cung cấp"
+          >
+            <div className="space-y-4">
+              <input type="text" placeholder="Tên" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="text" placeholder="Liên hệ" className="w-full border border-gray-300 rounded px-3 py-2" />
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Item Management Component
+    const ItemManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách mặt hàng</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm mặt hàng
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">ID</th>
+                <th className="p-2">Tên</th>
+                <th className="p-2">Loại</th>
+                <th className="p-2">Số lượng</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">I001</td>
+                <td className="p-2">Gạo</td>
+                <td className="p-2">Nguyên liệu</td>
+                <td className="p-2">50</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">I002</td>
+                <td className="p-2">Dầu ăn</td>
+                <td className="p-2">Nguyên liệu</td>
+                <td className="p-2">30</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm mặt hàng"
+          >
+            <div className="space-y-4">
+              <input type="text" placeholder="Tên" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="text" placeholder="Loại" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="number" placeholder="Số lượng" className="w-full border border-gray-300 rounded px-3 py-2" />
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Product Management Component
+    const ProductManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách sản phẩm</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm sản phẩm
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">ID</th>
+                <th className="p-2">Tên</th>
+                <th className="p-2">Danh mục</th>
+                <th className="p-2">Giá</th>
+                <th className="p-2">Mặt hàng</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">P001</td>
+                <td className="p-2">Bánh mì</td>
+                <td className="p-2">Thực phẩm</td>
+                <td className="p-2">20,000</td>
+                <td className="p-2">Bột mì</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">P002</td>
+                <td className="p-2">Nước ngọt</td>
+                <td className="p-2">Đồ uống</td>
+                <td className="p-2">10,000</td>
+                <td className="p-2">-</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm sản phẩm"
+          >
+            <div className="space-y-4">
+              <input type="text" placeholder="Tên" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="text" placeholder="Danh mục" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="number" placeholder="Giá" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Gạo</option>
+                <option>Dầu ăn</option>
+              </select>
+              <input type="number" placeholder="Số lượng" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <textarea placeholder="Hướng dẫn" className="w-full border border-gray-300 rounded px-3 py-2"></textarea>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Customer Management Component
+    const CustomerManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách khách hàng</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm khách hàng
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">ID</th>
+                <th className="p-2">Tên</th>
+                <th className="p-2">Số điện thoại</th>
+                <th className="p-2">Điểm</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">C001</td>
+                <td className="p-2">Nguyễn Văn A</td>
+                <td className="p-2">0123456789</td>
+                <td className="p-2">100</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">C002</td>
+                <td className="p-2">Trần Thị B</td>
+                <td className="p-2">0987654321</td>
+                <td className="p-2">50</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm khách hàng"
+          >
+            <div className="space-y-4">
+              <input type="text" placeholder="Tên" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="text" placeholder="Số điện thoại" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <input type="number" placeholder="Điểm" className="w-full border border-gray-300 rounded px-3 py-2" />
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Order Management Component
+    const OrderManagement = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      return (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Danh sách đơn hàng</h2>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thêm đơn hàng
+            </button>
+          </div>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2">ID</th>
+                <th className="p-2">Ngày đặt</th>
+                <th className="p-2">Khách hàng</th>
+                <th className="p-2">Sản phẩm</th>
+                <th className="p-2">Số lượng</th>
+                <th className="p-2">Tổng tiền</th>
+                <th className="p-2">Trạng thái</th>
+                <th className="p-2">Thanh toán</th>
+                <th className="p-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t">
+                <td className="p-2">O001</td>
+                <td className="p-2">20/04/2025</td>
+                <td className="p-2">Nguyễn Văn A</td>
+                <td className="p-2">Bánh mì</td>
+                <td className="p-2">2</td>
+                <td className="p-2">40,000</td>
+                <td className="p-2 text-green-600">Hoàn thành</td>
+                <td className="p-2">Tiền mặt</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+              <tr className="border-t bg-gray-50">
+                <td className="p-2">O002</td>
+                <td className="p-2">19/04/2025</td>
+                <td className="p-2">Trần Thị B</td>
+                <td className="p-2">Nước ngọt</td>
+                <td className="p-2">3</td>
+                <td className="p-2">30,000</td>
+                <td className="p-2 text-yellow-600">Đang xử lý</td>
+                <td className="p-2">Chuyển khoản</td>
+                <td className="p-2">
+                  <button className="text-blue-500 mr-2">Sửa</button>
+                  <button className="text-red-500">Xóa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Thêm đơn hàng"
+          >
+            <div className="space-y-4">
+              <input type="date" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Nguyễn Văn A</option>
+                <option>Trần Thị B</option>
+              </select>
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Bánh mì</option>
+                <option>Nước ngọt</option>
+              </select>
+              <input type="number" placeholder="Số lượng" className="w-full border border-gray-300 rounded px-3 py-2" />
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Đang xử lý</option>
+                <option>Hoàn thành</option>
+                <option>Đã hủy</option>
+              </select>
+              <select className="w-full border border-gray-300 rounded px-3 py-2">
+                <option>Tiền mặt</option>
+                <option>Chuyển khoản</option>
+              </select>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    // Main App Component
+    const App = () => {
+      const [currentPage, setCurrentPage] = useState('Dashboard');
+
+      const renderPage = () => {
+        switch (currentPage) {
+          case 'Dashboard':
+            return <Dashboard />;
+          case 'Quản lý nhân viên':
+            return <EmployeeManagement />;
+          case 'Quản lý chi nhánh':
+            return <BranchManagement />;
+          case 'Quản lý ca làm việc':
+            return <ShiftManagement />;
+          case 'Quản lý nhập kho':
+            return <StockEntryManagement />;
+          case 'Quản lý nhà cung cấp':
+            return <SupplierManagement />;
+          case 'Quản lý mặt hàng':
+            return <ItemManagement />;
+          case 'Quản lý sản phẩm':
+            return <ProductManagement />;
+          case 'Quản lý khách hàng':
+            return <CustomerManagement />;
+          case 'Quản lý đơn hàng':
+            return <OrderManagement />;
+          default:
+            return <Dashboard />;
+        }
+      };
+
+      return (
+        <div className="flex">
+          <Sidebar setCurrentPage={setCurrentPage} />
+          <div className="flex-1 ml-64">
+            <Header title={currentPage} />
+            {renderPage()}
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
